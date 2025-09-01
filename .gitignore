@@ -1,0 +1,11 @@
+Debug/
+ipch/
+x64/
+MyImage.sdf
+MyImage.VC.db
+MyImage/Debug/
+MyImage/x64/
+.vs/
+MyImage/MyImage.aps
+
+
