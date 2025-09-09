@@ -184,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LibMil.h" />
+    <ClInclude Include="LibMilDisp.h" />
     <ClInclude Include="MyImage.h" />
     <ClInclude Include="MyImageDlg.h" />
     <ClInclude Include="Resource.h" />
@@ -193,6 +194,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LibMil.cpp" />
+    <ClCompile Include="LibMilDisp.cpp" />
     <ClCompile Include="MyImage.cpp" />
     <ClCompile Include="MyImageDlg.cpp" />
     <ClCompile Include="SimpleImage.cpp" />

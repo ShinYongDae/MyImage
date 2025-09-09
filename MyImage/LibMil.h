@@ -23,18 +23,23 @@
 
 class CLibMil
 {
+	CWnd* m_pParent;
 	MIL_ID m_MilApplication;                 /* Application identifier.            */
 	MIL_ID m_MilSystem;                      /* System identifier.                 */
 	MIL_ID m_MilDisplay;                     /* Display identifier.                */
 	MIL_ID m_MilImage;                       /* Image buffer identifier.           */
 
+	int m_nDisplaySizeX, m_nDisplaySizeY;
+
 public:
-	CLibMil();
+	CLibMil(CWnd* pParent = NULL);
 	~CLibMil();
 
 public:
 	void Init(CWnd* pParent = NULL);
 	void Copy(MIL_ID nSrc, MIL_ID nDst);
-	void DisplaySelect(MIL_ID DisplayId, MIL_ID ImageId, HWND hDispCtrl, CRect rtDispCtrl);
+	//void DisplaySelect(CLibMilDisp* pDisplayId, MIL_ID ImageId, HWND hDispCtrl, CRect rtDispCtrl);
+	int GetSystemId();
+	int GetDisplayId();
 };
 
