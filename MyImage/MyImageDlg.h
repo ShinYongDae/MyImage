@@ -6,6 +6,11 @@
 #include "SimpleImage.h"
 
 #define PATH_WORKING_INFO		_T("C:\\R2RSet\\WorkingInfo.ini")
+#define PATH_IMG_VRS			_T("C:\\R2RSet\\ImgVrs\\")
+#define PATH_OLD_FILE			_T("D:\\MarkedFile\\")
+#define MODEL_NAME				_T("Model")
+#define LOT_NAME				_T("Lot")
+#define LAYER_NAME				_T("Layer")
 
 struct stSystem
 {
@@ -209,10 +214,18 @@ struct stLastJob
 // CMyImageDlg 대화 상자
 class CMyImageDlg : public CDialog
 {
+	BOOL m_bThreadAlive, m_bThreadStateEnd;
+	std::thread t1;
+	void ThreadStart();
+	void ThreadStop();
+
+	BOOL DirectoryExists(LPCTSTR szPath);
+
 	CSimpleImage* m_pImage;
 	int m_nIdxInfo;
 	stSystem m_stSystem;
 	stLastJob m_stLastJob;
+	int	m_nStepTHREAD_DISP_DEF;
 
 	BOOL LoadWorkingInfo();
 	void Disp(int nSerial);
@@ -230,9 +243,29 @@ public:
 #endif
 
 public:
+	static void ProcThrd(const LPVOID lpContext);
 
+	BOOL m_bTHREAD_DISP_DEF;
+	int m_nSerialDispMkInfo;
+	int m_nIdxMkInfo;
+	int m_nDef;
+	int m_nIdxDef;
+	int m_nSerial;
+
+	void DispDefImg();
+	void DispMkInfo();
+	void DispMkInfo(int nSeria);
+	BOOL CopyCadImg(int nSerial);
+	BOOL CopyDefImg(int nSerial);
+	void MakeImageDir(int nSerial);
+	BOOL IsDoneDispMkInfo();
+	void ShowDefInfo(int nIdx); // nIdx : 0 ~ 11 (12ea)
+	void SaveCadImg(int nSerial, int nIdxMkInfo, int nIdxImg); // (nSerial, 화면의 IDC 인덱스, 불량이미지 인덱스)
 
 protected:
+	void ThreadEnd();
+	BOOL ProcDlg();
+	BOOL ThreadIsAlive();
 
 
 protected:
@@ -248,4 +281,6 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedButton1();
 };

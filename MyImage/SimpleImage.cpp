@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "MyImage.h"
 #include "SimpleImage.h"
+#include "MyImageDlg.h"
 
 
 // CSimpleImage
@@ -19,22 +20,25 @@ CSimpleImage::CSimpleImage(CWnd* pParent/*=NULL*/)
 		m_hParent = pParent->GetSafeHwnd();
 
 	m_nIdxMk = 0;
-	m_pMil = M_NULL;
+
+	//m_pMil = M_NULL;
+	m_pMil = new CLibMil(this);
+	MIL_ID SystemId = m_pMil->GetSystemId();
+
 	for (i = 0; i < MAX_DISP; i++)
 	{
 		m_pMilDispCad[i] = NULL;
-		//m_pMilBufCad[i] = NULL;
+		m_MilBufCad[i] = NULL;
 		//m_pMilOvrCad[i] = NULL;
 		//m_pMilDelOvrCad[i] = NULL;
+		//m_pMilDispCad[i] = new CLibMilDisp(SystemId);
 
-		//m_pMilDispDef[i] = NULL;
-		//m_pMilBufDef[i] = NULL;
+		m_pMilDispDef[i] = NULL;
+		m_MilBufDef[i] = NULL;
 		//m_pMilOvrDef[i] = NULL;
 		//m_pMilDelOvrDef[i] = NULL;
+		//m_pMilDispDef[i] = new CLibMilDisp(SystemId);
 	}
-
-	//m_pMil = new CLibMil(this);
-	//m_pMilDispCad[0] = new CLibMilDisp(this);
 
 	CreateWndForm(WS_CHILD | WS_OVERLAPPED);
 	ThreadStart();
@@ -61,11 +65,11 @@ CSimpleImage::~CSimpleImage()
 		//	delete m_pMilDelOvrCad[i];
 		//	m_pMilDelOvrCad[i] = NULL;
 		//}
-		//if (m_pMilBufCad[i])
-		//{
-		//	delete m_pMilBufCad[i];
-		//	m_pMilBufCad[i] = NULL;
-		//}
+		if (m_MilBufCad[i])
+		{
+			MbufFree(m_MilBufCad[i]);
+			m_MilBufCad[i] = NULL;
+		}
 		if (m_pMilDispCad[i])
 		{
 			delete m_pMilDispCad[i];
@@ -83,16 +87,16 @@ CSimpleImage::~CSimpleImage()
 		//	delete m_pMilDelOvrDef[i];
 		//	m_pMilDelOvrDef[i] = NULL;
 		//}
-		//if (m_pMilBufDef[i])
-		//{
-		//	delete m_pMilBufDef[i];
-		//	m_pMilBufDef[i] = NULL;
-		//}
-		//if (m_pMilDispDef[i])
-		//{
-		//	delete m_pMilDispDef[i];
-		//	m_pMilDispDef[i] = NULL;
-		//}
+		if (m_MilBufDef[i])
+		{
+			MbufFree(m_MilBufDef[i]);
+			m_MilBufDef[i] = NULL;
+		}
+		if (m_pMilDispDef[i])
+		{
+			delete m_pMilDispDef[i];
+			m_pMilDispDef[i] = NULL;
+		}
 	}
 
 	if (m_pMil)
@@ -123,15 +127,15 @@ BOOL CSimpleImage::CreateWndForm(DWORD dwStyle)
 
 void CSimpleImage::ProcThrd(const LPVOID lpContext)
 {
-	CSimpleImage* pSimpleCamMaster = reinterpret_cast<CSimpleImage*>(lpContext);
+	CSimpleImage* pSimpleImage = reinterpret_cast<CSimpleImage*>(lpContext);
 
-	while (pSimpleCamMaster->ThreadIsAlive())
+	while (pSimpleImage->ThreadIsAlive())
 	{
-		if (!pSimpleCamMaster->ProcImage())
+		if (!pSimpleImage->ProcImage())
 			break;
 	}
 
-	pSimpleCamMaster->ThreadEnd();
+	pSimpleImage->ThreadEnd();
 }
 
 BOOL CSimpleImage::ProcImage()
@@ -205,23 +209,28 @@ void CSimpleImage::ShiftInfo()
 	for (int i = 0; i < MAX_DISP - 1; i++)
 	{
 		m_pMil->Copy(m_MilBufCad[i + 1], m_MilBufCad[i]);
-		m_pMil->Copy(m_MilOvrCad[i + 1], m_MilOvrCad[i]);
+		//m_pMil->Copy(m_MilOvrCad[i + 1], m_MilOvrCad[i]);
 		m_pMil->Copy(m_MilBufDef[i + 1], m_MilBufDef[i]);
+		//m_pMil->Copy(m_MilOvrDef[i + 1], m_MilOvrDef[i]);
 	}
 }
 
 void CSimpleImage::DisplaySelect(int nKind, HWND hDispCtrl, CRect rtDispCtrl, int nIdx) // nKind : CAD_image[0], Defect_image[1]
 {
+	MIL_ID SystemId = m_pMil->GetSystemId();
+
 	if (nKind == CAD_IMG)
 	{
-		//m_pMil->DisplaySelect(m_pMilDispCad[nIdx], m_MilBufCad[nIdx], hDispCtrl, rtDispCtrl);
-		m_pMilDispCad[nIdx]->DisplaySelect(m_MilBufCad[nIdx], hDispCtrl, rtDispCtrl);
+		SelDispCad(hDispCtrl, rtDispCtrl, nIdx);
+		//MdispAlloc(SystemId, M_DEFAULT, _T("M_DEFAULT"), M_DEFAULT, &m_MilBufCad[nIdx]);
+		//m_pMilDispCad[nIdx]->DisplaySelect(m_MilBufCad[nIdx], hDispCtrl, rtDispCtrl);
 	}
 
 	else if (nKind == DEF_IMG)
 	{
-		//m_pMil->DisplaySelect(m_pMilDispDef[nIdx], m_MilBufDef[nIdx], hDispCtrl, rtDispCtrl);
-		//m_pMilDispDef[nIdx]->DisplaySelect(m_MilBufDef[nIdx], hDispCtrl);
+		SelDispDef(hDispCtrl, rtDispCtrl, nIdx);
+		//MdispAlloc(SystemId, M_DEFAULT, _T("M_DEFAULT"), M_DEFAULT, &m_MilBufDef[nIdx]);
+		//m_pMilDispDef[nIdx]->DisplaySelect(m_MilBufDef[nIdx], hDispCtrl, rtDispCtrl);
 	}
 }
 
@@ -238,6 +247,7 @@ void CSimpleImage::SelDispCad(HWND hDispCtrl, CRect rtDispCtrl, int nIdx)
 	}
 
 	MbufAlloc2d(SystemId, DISP_SIZE_X, DISP_SIZE_Y, 1L + M_UNSIGNED, M_IMAGE + M_DISP + M_PROC, &m_MilBufCad[nIdx]);
+	MbufClear(m_MilBufCad[nIdx], M_NULL);
 
 	// Mil Display set
 	if (m_pMilDispCad[nIdx])
@@ -254,6 +264,38 @@ void CSimpleImage::SelDispCad(HWND hDispCtrl, CRect rtDispCtrl, int nIdx)
 
 
 }
+
+void CSimpleImage::SelDispDef(HWND hDispCtrl, CRect rtDispCtrl, int nIdx)
+{
+	MIL_ID SystemId = m_pMil->GetSystemId();
+
+	// for Defect..........
+	// Live Image Buffer set
+	if (m_MilBufDef[nIdx])
+	{
+		MbufFree(m_MilBufDef[nIdx]);
+		m_MilBufDef[nIdx] = NULL;
+	}
+
+	MbufAlloc2d(SystemId, DISP_SIZE_X, DISP_SIZE_Y, 8L + M_UNSIGNED, M_IMAGE + M_DISP + M_PROC, &m_MilBufDef[nIdx]);
+	MbufClear(m_MilBufDef[nIdx], M_NULL);
+
+	// Mil Display set
+	if (m_pMilDispDef[nIdx])
+	{
+		delete m_pMilDispDef[nIdx];
+		m_pMilDispDef[nIdx] = NULL;
+	}
+	m_pMilDispDef[nIdx] = new CLibMilDisp(SystemId);
+	m_pMilDispDef[nIdx]->DisplaySelect(m_MilBufDef[nIdx], hDispCtrl, rtDispCtrl);
+
+	// Create Overlay
+	m_pMilDispDef[nIdx]->CreateOverlay(M_COLOR_GREEN);
+	Sleep(30);
+
+
+}
+
 
 void CSimpleImage::FreeDispCad(HWND hDispCtrl, CRect rtDispCtrl, int nIdx)
 {
@@ -273,3 +315,63 @@ void CSimpleImage::FreeDispCad(HWND hDispCtrl, CRect rtDispCtrl, int nIdx)
 		m_pMilDispCad[nIdx] = NULL;
 	}
 }
+
+void CSimpleImage::ShiftDisp()
+{
+	ShiftInfo();
+	//for (int i = 0; i < MAX_DISP - 1; i++)
+	//{
+	//	MbufCopy(m_MilBufCad[i + 1], m_MilBufCad[i]);
+	//	//MbufCopy(m_pMilOvrCad[i + 1]->m_MilBuffer, m_pMilOvrCad[i]->m_MilBuffer);
+	//	//MbufCopy(m_pMilBufDef[i + 1]->m_MilImage, m_pMilBufDef[i]->m_MilImage);
+	//}
+}
+
+void CSimpleImage::ShowDispCad(int nIdxMkInfo, int nSerial, int nDefPcs) // From 0 To 12...for Screen display.
+{
+	CString sPathOldFile = PATH_OLD_FILE;
+
+	TCHAR cPath[MAX_PATH];
+	if (m_MilBufCad[nIdxMkInfo] > 0)
+	{
+		CString sPath;
+		sPath.Format(_T("%s%s\\%s\\%s\\CadImage\\%d\\%05d.tif"), sPathOldFile, MODEL_NAME, LOT_NAME, LAYER_NAME, nSerial, nDefPcs);
+		CFileFind findfile;
+		if (findfile.FindFile(sPath))
+		{
+			_stprintf(cPath, _T("%s"), sPath);
+			MbufLoad(cPath, m_MilBufCad[nIdxMkInfo]);
+		}
+	}
+}
+
+void CSimpleImage::ShowDispDef(int nIdxMkInfo, int nSerial, int nDefPcs) // From 0 To 12...for Screen display.
+{
+	CString sPathOldFile = PATH_OLD_FILE;
+
+	TCHAR cPath[MAX_PATH];
+	if (m_MilBufDef[nIdxMkInfo] > 0)
+	{
+		CString sPath;
+		sPath.Format(_T("%s%s\\%s\\%s\\DefImage\\%d\\%05d.tif"), sPathOldFile, MODEL_NAME, LOT_NAME, LAYER_NAME, nSerial, nDefPcs);
+		CFileFind findfile;
+		if (findfile.FindFile(sPath))
+		{
+			_stprintf(cPath, _T("%s"), sPath);
+			MbufLoad(cPath, m_MilBufDef[nIdxMkInfo]);
+		}
+	}
+}
+
+void CSimpleImage::SaveCadImg(int nIdxMkInfo, CString sPath)
+{
+	if (m_MilBufCad[nIdxMkInfo])
+	{
+		MbufSave(sPath, m_MilBufCad[nIdxMkInfo]);
+	}
+	else
+	{
+		AfxMessageBox(_T("SaveCadImg() Fail !!"));
+	}
+}
+

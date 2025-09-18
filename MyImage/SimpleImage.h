@@ -28,9 +28,10 @@ class CSimpleImage : public CWnd
 	void ThreadStop();
 
 	int m_nIdxMk;
-	CLibMil* m_pMil;
-	CLibMilDisp* m_pMilDispCad[MAX_DISP], m_pMilDispDef[MAX_DISP];
-	MIL_ID m_MilBufCad[MAX_DISP], m_MilOvrCad[MAX_DISP], m_MilBufDef[MAX_DISP];
+	CLibMil *m_pMil;
+	CLibMilDisp *m_pMilDispCad[MAX_DISP], *m_pMilDispDef[MAX_DISP];
+	MIL_ID m_MilBufCad[MAX_DISP], m_MilOvrCad[MAX_DISP];
+	MIL_ID m_MilBufDef[MAX_DISP], m_MilOvrDef[MAX_DISP];
 
 	void ShiftInfo();
 	void DisplaySelect(int nKind, HWND hDispCtrl, CRect rtDispCtrl, int nIdx); // nKind : CAD_image[0], Defect_image[1]
@@ -43,7 +44,12 @@ public:
 public:
 	void DispMkInfo(int nSerial);
 	void SelDispCad(HWND hDispCtrl, CRect rtDispCtrl, int nIdx);
+	void SelDispDef(HWND hDispCtrl, CRect rtDispCtrl, int nIdx);
 	void FreeDispCad(HWND hDispCtrl, CRect rtDispCtrl, int nIdx);
+	void ShiftDisp();
+	void ShowDispCad(int nIdxMkInfo, int nSerial, int nDefPcs);
+	void ShowDispDef(int nIdxMkInfo, int nSerial, int nDefPcs);
+	void SaveCadImg(int nIdxMkInfo, CString sPath);
 
 
 protected:
