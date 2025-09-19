@@ -32,6 +32,10 @@ class CLibMilDisp
 {
 	MIL_ID m_MilDisplay;
 	MIL_ID m_MilDisplayOverlay;
+	MIL_ID m_MilGraphicContextID;
+	long m_lFontName;
+	double m_dFontScaleX;
+	double m_dFontScaleY;
 
 	long m_lOverlayColor;
 	int m_nDisplaySizeX, m_nDisplaySizeY;
@@ -48,6 +52,7 @@ public:
 
 public:
 	void CreateOverlay(long nColor);
+	void ShowOverlay(CString str);
 	void DisplaySelect(MIL_ID nBufImg, HWND hCtrl, CRect rtDispCtrl);
 	BOOL ClearOverlay(long pColor);
 	BOOL ClearOverlay();

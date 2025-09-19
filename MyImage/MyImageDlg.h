@@ -228,7 +228,6 @@ class CMyImageDlg : public CDialog
 	int	m_nStepTHREAD_DISP_DEF;
 
 	BOOL LoadWorkingInfo();
-	void Disp(int nSerial);
 	void ShiftInfo();
 	void SelDisp();
 

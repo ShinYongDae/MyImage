@@ -27,7 +27,7 @@ CMyImageDlg::CMyImageDlg(CWnd* pParent /*=NULL*/)
 	m_nStepTHREAD_DISP_DEF = 0;
 	m_nIdxMkInfo = 0;
 	m_nIdxDef = 0;
-	m_nDef = 0;
+	m_nDef = 0; m_nIdxInfo = 0;
 	m_nSerial = 0;
 }
 
@@ -202,16 +202,15 @@ void CMyImageDlg::DispMkInfo(int nSerial)
 		//m_pImage->ShowOvrCad(nIdxMkInfo, nSerial);
 		if (m_pImage)
 		{
+			m_pImage->Clear(nIdxMkInfo);
 			m_pImage->ShowDispCad(nIdxMkInfo, nSerial, nDefImg);
+			m_pImage->ShowOvrCad(nIdxMkInfo, nSerial, m_nIdxDef);
 			m_pImage->ShowDispDef(nIdxMkInfo, nSerial, nDefImg);
 		}
-		//nDefImg = pDoc->m_pPcr[0][nIdx]->m_pImg[m_nIdxDef[0]];
-		//pView->m_pVision[0]->ShowDispDef(nIdxMkInfo, nSerial, 0, nDefImg);
 		SaveCadImg(nSerial, nIdxMkInfo, nDefImg);
 		ShowDefInfo(nIdxMkInfo);
-		//SaveDefImgPosUp(nSerial, nIdxMkInfo, nDefImg);
-		m_nIdxMkInfo++;
-		m_nIdxDef++;
+		m_nIdxMkInfo++;	// 불량포인트 이미지의 인덱스
+		m_nIdxDef++;	// 불량피스의 대표불량 이미지의 인덱스 (0, 1, 2, ~ )
 	}
 	else
 		m_nIdxMkInfo++;
@@ -275,7 +274,7 @@ void CMyImageDlg::DispDefImg()
 	case 2:
 		if (IsDoneDispMkInfo())	 // Check 불량이미지(이전) Display End
 		{
-			m_nDef = 0;
+			m_nDef = 0; m_nIdxInfo = 0;
 			if (nSerialL > 0)
 			{
 				m_nSerial = nSerialL;
@@ -288,7 +287,7 @@ void CMyImageDlg::DispDefImg()
 	case 3:
 		if (IsDoneDispMkInfo())	 // Check 불량이미지(좌) Display End
 		{
-			m_nDef = 0;
+			m_nDef = 0; m_nIdxInfo = 0;
 			m_nSerialDispMkInfo = nSerialR;	// m_nSerial
 			if (nSerialR > 0) // 우측 Camera
 			{
@@ -301,7 +300,7 @@ void CMyImageDlg::DispDefImg()
 	case 4:
 		if (IsDoneDispMkInfo())	 // Check 불량이미지(우) Display End
 		{
-			m_nDef = 0;
+			m_nDef = 0; m_nIdxInfo = 0;
 			m_nStepTHREAD_DISP_DEF++;
 		}
 		break;
@@ -383,14 +382,6 @@ BOOL CMyImageDlg::LoadWorkingInfo()
 	}
 
 	return TRUE;
-}
-
-void CMyImageDlg::Disp(int nSerial)
-{
-	if (m_nIdxInfo >= MAX_DISP)	ShiftInfo();
-
-	if (m_pImage)
-		m_pImage->DispMkInfo(nSerial);
 }
 
 void CMyImageDlg::ShiftInfo()
@@ -848,11 +839,51 @@ void CMyImageDlg::OnBnClickedButton1()
 void CMyImageDlg::ShowDefInfo(int nIdx) // nIdx : 0 ~ 11 (12ea)
 {
 	CString str;
-	int nDefCode, nStrip, nCol, nRow;
+	int nCtrlId;
 	COLORREF rgbDef;
 
-	str.Format(_T("%d"), nIdx);
-	GetDlgItem(IDC_EDIT_DEF_INFO_12)->GetWindowText(str);
+	switch (nIdx)
+	{
+	case 0:
+		nCtrlId = IDC_EDIT_DEF_INFO_001;
+		break;
+	case 1:
+		nCtrlId = IDC_EDIT_DEF_INFO_002;
+		break;
+	case 2:
+		nCtrlId = IDC_EDIT_DEF_INFO_003;
+		break;
+	case 3:
+		nCtrlId = IDC_EDIT_DEF_INFO_004;
+		break;
+	case 4:
+		nCtrlId = IDC_EDIT_DEF_INFO_005;
+		break;
+	case 5:
+		nCtrlId = IDC_EDIT_DEF_INFO_006;
+		break;
+	case 6:
+		nCtrlId = IDC_EDIT_DEF_INFO_007;
+		break;
+	case 7:
+		nCtrlId = IDC_EDIT_DEF_INFO_008;
+		break;
+	case 8:
+		nCtrlId = IDC_EDIT_DEF_INFO_009;
+		break;
+	case 9:
+		nCtrlId = IDC_EDIT_DEF_INFO_010;
+		break;
+	case 10:
+		nCtrlId = IDC_EDIT_DEF_INFO_011;
+		break;
+	case 11:
+		nCtrlId = IDC_EDIT_DEF_INFO_12;
+		break;
+	}
+	
+	str.Format(_T("%d"), m_nIdxInfo++);
+	GetDlgItem(nCtrlId)->SetWindowText(str);
 }
 
 void CMyImageDlg::SaveCadImg(int nSerial, int nIdxMkInfo, int nIdxImg) // (nSerial, 화면의 IDC 인덱스, 불량이미지 인덱스)

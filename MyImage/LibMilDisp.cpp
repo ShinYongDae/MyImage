@@ -7,6 +7,11 @@ CLibMilDisp::CLibMilDisp(MIL_ID SystemId)
 	m_MilDisplay = M_NULL;
 	MdispAlloc(SystemId, M_DEFAULT, _T("M_DEFAULT"), M_DEFAULT, &m_MilDisplay);
 
+	// Overlay GraphicContex
+	m_MilGraphicContextID = M_NULL;
+	if (!m_MilGraphicContextID)
+		MgraAlloc(SystemId, &m_MilGraphicContextID);
+
 	m_MilDisplayOverlay = M_NULL;
 	m_lOverlayColor = 0;
 	m_nDisplaySizeX = 0;
@@ -37,6 +42,12 @@ CLibMilDisp::~CLibMilDisp()
 	//	delete m_pMilDelOvrCad[nIdx];
 	//	m_pMilDelOvrCad[nIdx] = NULL;
 	//}
+
+	if (m_MilGraphicContextID)
+	{
+		MgraFree(m_MilGraphicContextID);
+		m_MilGraphicContextID = M_NULL;
+	}
 
 	if (m_MilDisplay)
 	{
@@ -123,7 +134,7 @@ BOOL CLibMilDisp::ClearOverlay()
 {
 	if (m_MilDisplayOverlay)
 	{
-		MbufClear(m_MilDisplayOverlay, (double)m_lOverlayColor);
+		MbufClear(m_MilDisplayOverlay, (double)0);
 		return TRUE;
 	}
 	else
@@ -142,6 +153,8 @@ MIL_ID CLibMilDisp::GetOverlayId()
 
 void CLibMilDisp::CreateOverlay(long nColor)
 {
+	m_lOverlayColor = nColor;
+
 	MdispControl(m_MilDisplay, M_OVERLAY, M_ENABLE);
 	MdispInquire(m_MilDisplay, M_OVERLAY_ID, &m_MilDisplayOverlay);
 
@@ -151,7 +164,22 @@ void CLibMilDisp::CreateOverlay(long nColor)
 	nColor = MdispInquire(m_MilDisplay, M_TRANSPARENT_COLOR, M_NULL); 
 	MbufClear(m_MilDisplayOverlay, (double)nColor);
 
-	m_lOverlayColor = nColor;
+	//int nImgSizeX = 0, nImgSizeY = 0;
+	//nImgSizeX = MbufInquire(m_MilDisplayOverlay, M_SIZE_X, M_NULL);
+	//nImgSizeY = MbufInquire(m_MilDisplayOverlay, M_SIZE_Y, M_NULL);
+	//MgraControl(M_DEFAULT, M_BACKGROUND_MODE, M_TRANSPARENT);
+	
+	m_lFontName = M_FONT_DEFAULT_SMALL;
+	m_dFontScaleX = 2.0;
+	m_dFontScaleY = 2.0;
+
+	//MgraFont(m_MilGraphicContextID, m_lFontName);
+	//MgraFontScale(m_MilGraphicContextID, m_dFontScaleX, m_dFontScaleY);
+	//MgraControl(m_MilGraphicContextID, M_BACKGROUND_MODE, M_OPAQUE);
+
+
+
+
 /*
 	// Draw
 	if (m_pMilOvrCad[nIdx])
@@ -180,4 +208,29 @@ void CLibMilDisp::CreateOverlay(long nColor)
 		m_pMilDelOvrCad[nIdx]->SetDrawBackColor(m_pMilDispCad[nIdx]->m_lOverlayColor);
 	}
 */
+}
+/*
+//m_lFontName = M_FONT_DEFAULT_SMALL;
+//m_dFontScaleX = 1.0;
+//m_dFontScaleY = 1.0;
+
+//MgraFont(m_MilGraphicContextID, m_lFontName);
+//MgraFontScale(m_MilGraphicContextID, m_dFontScaleX, m_dFontScaleY);
+*/
+void CLibMilDisp::ShowOverlay(CString str)
+{
+	MdispControl(m_MilDisplay, M_OVERLAY_CLEAR, M_DEFAULT);
+	MdispControl(m_MilDisplay, M_OVERLAY_SHOW, M_DISABLE);
+
+	MgraControl(m_MilGraphicContextID, M_BACKGROUND_MODE, M_TRANSPARENT);
+	MgraFont(m_MilGraphicContextID, m_lFontName);
+	MgraFontScale(m_MilGraphicContextID, m_dFontScaleX, m_dFontScaleY);
+
+	TCHAR szText[30];
+	_stprintf(szText, _T("%s"), str);
+	MgraColor(m_MilGraphicContextID, m_lOverlayColor);
+	//MgraRectFill(m_MilGraphicContextID, m_MilDisplayOverlay, 3, 3, 480, 3);
+	MgraText(m_MilGraphicContextID, m_MilDisplayOverlay, 3, 3, szText);
+
+	MdispControl(m_MilDisplay, M_OVERLAY_SHOW, M_ENABLE);
 }

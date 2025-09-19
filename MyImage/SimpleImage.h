@@ -30,8 +30,8 @@ class CSimpleImage : public CWnd
 	int m_nIdxMk;
 	CLibMil *m_pMil;
 	CLibMilDisp *m_pMilDispCad[MAX_DISP], *m_pMilDispDef[MAX_DISP];
-	MIL_ID m_MilBufCad[MAX_DISP], m_MilOvrCad[MAX_DISP];
-	MIL_ID m_MilBufDef[MAX_DISP], m_MilOvrDef[MAX_DISP];
+	MIL_ID m_MilBufCad[MAX_DISP];// , m_MilOvrCad[MAX_DISP];
+	MIL_ID m_MilBufDef[MAX_DISP];// , m_MilOvrDef[MAX_DISP];
 
 	void ShiftInfo();
 	void DisplaySelect(int nKind, HWND hDispCtrl, CRect rtDispCtrl, int nIdx); // nKind : CAD_image[0], Defect_image[1]
@@ -50,6 +50,8 @@ public:
 	void ShowDispCad(int nIdxMkInfo, int nSerial, int nDefPcs);
 	void ShowDispDef(int nIdxMkInfo, int nSerial, int nDefPcs);
 	void SaveCadImg(int nIdxMkInfo, CString sPath);
+	void ShowOvrCad(int nIdxMkInfo, int nSerial, int nIdxDef);
+	BOOL Clear(int nIdxMkInfo);
 
 
 protected:

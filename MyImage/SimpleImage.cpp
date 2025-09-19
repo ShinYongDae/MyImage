@@ -204,17 +204,6 @@ void CSimpleImage::DispMkInfo(int nSerial)
 	//m_nIdxDef[0]++;
 }
 
-void CSimpleImage::ShiftInfo()
-{
-	for (int i = 0; i < MAX_DISP - 1; i++)
-	{
-		m_pMil->Copy(m_MilBufCad[i + 1], m_MilBufCad[i]);
-		//m_pMil->Copy(m_MilOvrCad[i + 1], m_MilOvrCad[i]);
-		m_pMil->Copy(m_MilBufDef[i + 1], m_MilBufDef[i]);
-		//m_pMil->Copy(m_MilOvrDef[i + 1], m_MilOvrDef[i]);
-	}
-}
-
 void CSimpleImage::DisplaySelect(int nKind, HWND hDispCtrl, CRect rtDispCtrl, int nIdx) // nKind : CAD_image[0], Defect_image[1]
 {
 	MIL_ID SystemId = m_pMil->GetSystemId();
@@ -222,15 +211,11 @@ void CSimpleImage::DisplaySelect(int nKind, HWND hDispCtrl, CRect rtDispCtrl, in
 	if (nKind == CAD_IMG)
 	{
 		SelDispCad(hDispCtrl, rtDispCtrl, nIdx);
-		//MdispAlloc(SystemId, M_DEFAULT, _T("M_DEFAULT"), M_DEFAULT, &m_MilBufCad[nIdx]);
-		//m_pMilDispCad[nIdx]->DisplaySelect(m_MilBufCad[nIdx], hDispCtrl, rtDispCtrl);
 	}
 
 	else if (nKind == DEF_IMG)
 	{
 		SelDispDef(hDispCtrl, rtDispCtrl, nIdx);
-		//MdispAlloc(SystemId, M_DEFAULT, _T("M_DEFAULT"), M_DEFAULT, &m_MilBufDef[nIdx]);
-		//m_pMilDispDef[nIdx]->DisplaySelect(m_MilBufDef[nIdx], hDispCtrl, rtDispCtrl);
 	}
 }
 
@@ -319,12 +304,33 @@ void CSimpleImage::FreeDispCad(HWND hDispCtrl, CRect rtDispCtrl, int nIdx)
 void CSimpleImage::ShiftDisp()
 {
 	ShiftInfo();
-	//for (int i = 0; i < MAX_DISP - 1; i++)
-	//{
-	//	MbufCopy(m_MilBufCad[i + 1], m_MilBufCad[i]);
-	//	//MbufCopy(m_pMilOvrCad[i + 1]->m_MilBuffer, m_pMilOvrCad[i]->m_MilBuffer);
-	//	//MbufCopy(m_pMilBufDef[i + 1]->m_MilImage, m_pMilBufDef[i]->m_MilImage);
-	//}
+}
+
+BOOL CSimpleImage::Clear(int nIdxMkInfo)
+{
+	if (m_MilBufCad[nIdxMkInfo])
+	{
+		MbufClear(m_MilBufCad[nIdxMkInfo], (double)0);
+		return TRUE;
+	}
+	else
+		return FALSE;
+
+	if (m_pMilDispCad[nIdxMkInfo])
+	{
+		m_pMilDispCad[nIdxMkInfo]->ClearOverlay();
+		return TRUE;
+	}
+	else
+		return FALSE;
+
+	if (m_MilBufDef[nIdxMkInfo])
+	{
+		MbufClear(m_MilBufDef[nIdxMkInfo], (double)0);
+		return TRUE;
+	}
+	else
+		return FALSE;
 }
 
 void CSimpleImage::ShowDispCad(int nIdxMkInfo, int nSerial, int nDefPcs) // From 0 To 12...for Screen display.
@@ -375,3 +381,21 @@ void CSimpleImage::SaveCadImg(int nIdxMkInfo, CString sPath)
 	}
 }
 
+void CSimpleImage::ShowOvrCad(int nIdxMkInfo, int nSerial, int nIdxDef)
+{
+	CString str;
+	str.Format(_T("%d-%d"), nSerial, nIdxDef);
+	if(m_pMilDispCad[nIdxMkInfo])
+		m_pMilDispCad[nIdxMkInfo]->ShowOverlay(str);
+}
+
+void CSimpleImage::ShiftInfo()
+{
+	for (int i = 0; i < MAX_DISP - 1; i++)
+	{
+		m_pMil->Copy(m_MilBufCad[i + 1], m_MilBufCad[i]);
+		m_pMil->Copy(m_pMilDispCad[i + 1]->GetOverlayId(), m_pMilDispCad[i]->GetOverlayId());
+		m_pMil->Copy(m_MilBufDef[i + 1], m_MilBufDef[i]);
+		//m_pMil->Copy(m_MilOvrDef[i + 1], m_MilOvrDef[i]);
+	}
+}
