@@ -42,6 +42,9 @@
     <ClInclude Include="LibMilDisp.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="vic7defs.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyImage.cpp">

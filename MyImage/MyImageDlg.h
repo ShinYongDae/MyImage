@@ -12,6 +12,12 @@
 #define LOT_NAME				_T("Lot")
 #define LAYER_NAME				_T("Layer")
 
+#define CAM_SPEC_DIR			_T("\\\\gm-storage2\\Sp-C1iN\\")
+#define CAM_MODEL				_T("L231115S31")
+#define CAM_LAYER_UP			_T("TOP-0-050")
+#define CAM_LAYER_DN			_T("BOTTOM-1-050")
+
+
 struct stSystem
 {
 	CString sMcName;
@@ -231,6 +237,8 @@ class CMyImageDlg : public CDialog
 	void ShiftInfo();
 	void SelDisp();
 
+	BOOL m_bFromCamMst;
+
 // 생성입니다.
 public:
 	CMyImageDlg(CWnd* pParent = NULL);	// 표준 생성자입니다.
@@ -282,4 +290,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedCheck1();
 };

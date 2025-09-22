@@ -29,6 +29,8 @@ CMyImageDlg::CMyImageDlg(CWnd* pParent /*=NULL*/)
 	m_nIdxDef = 0;
 	m_nDef = 0; m_nIdxInfo = 0;
 	m_nSerial = 0;
+
+	m_bFromCamMst = FALSE;
 }
 
 CMyImageDlg::~CMyImageDlg()
@@ -53,6 +55,7 @@ BEGIN_MESSAGE_MAP(CMyImageDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON1, &CMyImageDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_CHECK1, &CMyImageDlg::OnBnClickedCheck1)
 END_MESSAGE_MAP()
 
 
@@ -68,9 +71,10 @@ BOOL CMyImageDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
-	LoadWorkingInfo();
 
+	LoadWorkingInfo();
 	m_pImage = new CSimpleImage(this);
+
 	SelDisp();
 
 	ThreadStart();
@@ -198,8 +202,6 @@ void CMyImageDlg::DispMkInfo(int nSerial)
 	{
 		if (m_nIdxMkInfo >= MAX_DISP)
 			ShiftInfo();
-		//m_pImage->ShowDispCad(nIdxMkInfo, nSerial, 0, m_nIdxDef[0]);
-		//m_pImage->ShowOvrCad(nIdxMkInfo, nSerial);
 		if (m_pImage)
 		{
 			m_pImage->Clear(nIdxMkInfo);
@@ -255,18 +257,21 @@ void CMyImageDlg::DispDefImg()
 		m_nStepTHREAD_DISP_DEF++;
 		if (nSerialL > 0)
 		{
-			if (!CopyCadImg(nSerialL)) // 좌측 Camera
+			if (!m_bFromCamMst)
 			{
-				AfxMessageBox(_T("정지 - 좌측 Camera"));
-				break;
-			}
-
-			if (nSerialR > 0)
-			{
-				if (!CopyCadImg(nSerialR)) // 우측 Camera
+				if (!CopyCadImg(nSerialL)) // 좌측 Camera
 				{
-					AfxMessageBox(_T("정지 - 우측 Camera"));
+					AfxMessageBox(_T("정지 - 좌측 Camera"));
 					break;
+				}
+
+				if (nSerialR > 0)
+				{
+					if (!CopyCadImg(nSerialR)) // 우측 Camera
+					{
+						AfxMessageBox(_T("정지 - 우측 Camera"));
+						break;
+					}
 				}
 			}
 		}
@@ -326,14 +331,11 @@ void CMyImageDlg::DispMkInfo()
 		m_nIdxMkInfo = MAX_DISP;
 
 	m_nDef = nTotDef; // m_nDef : m_nIdxMkInfo + Display Def Num.
-	//m_bTHREAD_DISP_DEF = TRUE;
-	//m_nSerialDispMkInfo = 1;	// m_nSerial
 }
 
 BOOL CMyImageDlg::IsDoneDispMkInfo()
 {
 	return (m_nDef <= m_nIdxDef) ? TRUE : FALSE;
-	//return (!m_bTHREAD_DISP_DEF);
 }
 
 BOOL CMyImageDlg::LoadWorkingInfo()
@@ -895,4 +897,15 @@ void CMyImageDlg::SaveCadImg(int nSerial, int nIdxMkInfo, int nIdxImg) // (nSeri
 
 	if (m_pImage)
 		m_pImage->SaveCadImg(nIdxMkInfo, sPath);
+}
+
+
+void CMyImageDlg::OnBnClickedCheck1()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	BOOL bOn = ((CButton*)GetDlgItem(IDC_CHECK1))->GetCheck();
+	m_bFromCamMst = bOn;
+
+	if (m_pImage)
+		m_pImage->SetFromCamMst(bOn);
 }
